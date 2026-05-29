@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "nombre": "Taco de asada",
+    "precio": 25,
+    "categoria": "Tacos",
+    "descripcion": "Carne asada",
+    "disponible": true,
+    "orden": 1
+  },
+  {
+    "id": 1779692338148,
+    "nombre": "Taco de longaniza",
+    "precio": 25,
+    "categoria": "Tacos",
+    "descripcion": "Longaniza",
+    "disponible": true,
+    "orden": 2
+  },
+  {
+    "id": 2,
+    "nombre": "Taco campechano",
+    "precio": 25,
+    "categoria": "Tacos",
+    "descripcion": "Carne asada y longaniza",
+    "disponible": true,
+    "orden": 3
+  },
+  {
+    "id": 3,
+    "nombre": "Pambazo",
+    "precio": 45,
+    "categoria": "Especiales",
+    "descripcion": "Pambazo",
+    "disponible": true,
+    "orden": 4
+  },
+  {
+    "id": 1779696709051,
+    "nombre": "Papa rellena",
+    "precio": 50,
+    "categoria": "Especiales",
+    "descripcion": "Papa con carne asada",
+    "disponible": true,
+    "orden": 5
+  },
+  {
+    "id": 1779696654589,
+    "nombre": "Coca-Cola",
+    "precio": 25,
+    "categoria": "Bebidas",
+    "descripcion": "Coca-Cola 355ml",
+    "disponible": true,
+    "orden": 6
+  },
+  {
+    "id": 1779429390235,
+    "nombre": "Agua de jamaica",
+    "precio": 40,
+    "categoria": "Bebidas",
+    "descripcion": "Agua fresca de jamaica",
+    "disponible": true,
+    "orden": 7
+  }
+]

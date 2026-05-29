@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin | Tacos Matías</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+  <div class="admin-layout">
+
+    <aside class="admin-sidebar">
+
+      <div>
+        <div class="admin-brand">
+          <i class="bi bi-fire"></i>
+          <span>Tacos Matías</span>
+        </div>
+
+<button class="admin-nav" onclick="cambiarVistaAdmin('vistaTomarOrden', this)">
+  <i class="bi bi-plus-square-fill"></i>
+  <span>Tomar orden</span>
+</button>
+
+        <button id="btnVistaOrdenes" class="admin-nav active position-relative" onclick="abrirVistaOrdenes(this)">
+        <i class="bi bi-receipt-cutoff"></i>
+        <span>Órdenes</span>
+        <span id="badgeOrdenesNuevas" class="notification-dot d-none"></span>
+      </button>
+
+        <button class="admin-nav" onclick="cambiarVistaAdmin('vistaCuenta', this)">
+          <i class="bi bi-cash-coin"></i>
+          <span>Folios</span>
+        </button>
+
+        <button class="admin-nav" onclick="cambiarVistaAdmin('vistaBalance', this)">
+          <i class="bi bi-bar-chart-fill"></i>
+          <span>Balance</span>
+        </button>
+      </div>
+
+              <button class="admin-nav" onclick="cambiarVistaAdmin('vistaProductos', this)">
+          <i class="bi bi-basket2-fill"></i>
+          <span>Productos</span>
+        </button>
+
+      <button class="admin-nav admin-danger" onclick="abrirModalCerrarDia()">
+        <i class="bi bi-trash3-fill"></i>
+        <span>Cerrar día</span>
+      </button>
+
+    </aside>
+
+    <main class="admin-main">
+
+      <section id="vistaOrdenes" class="admin-view">
+        <p class="section-label">Cocina</p>
+        <h1 class="selection-title">Órdenes recibidas</h1>
+        <p class="selection-subtitle">Aquí veremos las comandas que van entrando.</p>
+
+        <div id="listaOrdenesAdmin" class="admin-grid"></div>
+      </section>
+
+      <section id="vistaTomarOrden" class="admin-view d-none">
+
+  <p class="section-label">Caja</p>
+
+  <h1 class="selection-title">
+    Tomar orden manual
+  </h1>
+
+  <p class="selection-subtitle">
+    Crear órdenes desde el panel admin.
+  </p>
+
+  <div class="row g-4">
+
+    <div class="col-lg-8">
+      <div id="productosTomarOrden" class="admin-grid"></div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="admin-card manual-order-card">
+
+        <h3 class="fw-bold mb-3">
+          Pedido actual
+        </h3>
+
+<select
+  id="folioOrdenManual"
+  class="form-control form-control-lg rounded-4 mb-3"
+  onchange="seleccionarFolioManual()"
+>
+  <option value="">Nueva cuenta</option>
+</select>
+
+        <input
+          id="nombreOrdenManual"
+          class="form-control form-control-lg rounded-4 mb-3"
+          placeholder="Nombre del cliente"
+        >
+
+        <div id="carritoOrdenManual" class="manual-cart-box mb-3"></div>
+
+<input
+  id="notasOrdenManual"
+  class="form-control form-control-lg rounded-4 mb-3"
+  placeholder="Instrucciones extra"
+/>
+
+        <h2 class="text-warning fw-bold">
+          Total: $
+          <span id="totalOrdenManual">0</span>
+        </h2>
+
+        <button
+          class="btn btn-warning btn-lg rounded-4 fw-bold w-100 mt-3"
+          onclick="enviarOrdenManual()"
+        >
+          Enviar orden
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+      <section id="vistaProductos" class="admin-view d-none">
+        <p class="section-label">Menú</p>
+        <h1 class="selection-title">Administrar productos</h1>
+        <p class="selection-subtitle">Agregar, editar, activar o desactivar productos.</p>
+
+        <div class="admin-card mb-4">
+          <h3 class="fw-bold mb-3">Nuevo producto</h3>
+
+          <div class="row g-3">
+            <div class="col-md-3">
+              <input id="nombreProducto" class="form-control form-control-lg rounded-4" placeholder="Nombre">
+            </div>
+
+            <div class="col-md-2">
+              <input id="precioProducto" type="number" class="form-control form-control-lg rounded-4" placeholder="Precio">
+            </div>
+
+            <div class="col-md-3">
+              <input id="categoriaProducto" class="form-control form-control-lg rounded-4" placeholder="Categoría">
+            </div>
+
+            <div class="col-md-4">
+              <input id="descripcionProducto" class="form-control form-control-lg rounded-4" placeholder="Descripción">
+            </div>
+          </div>
+
+          <button class="btn btn-warning btn-lg rounded-4 mt-3 fw-bold" onclick="agregarProducto()">
+            Agregar producto
+          </button>
+        </div>
+
+        <div id="listaProductosAdmin" class="admin-grid"></div>
+      </section>
+
+<section id="vistaCuenta" class="admin-view d-none">
+  <p class="section-label">Caja</p>
+  <h1 class="selection-title">Cuentas activas</h1>
+  <p class="selection-subtitle">Aquí veremos folios abiertos, totales, consumo y cierre de cuenta.</p>
+
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="admin-card cuenta-list-card">
+        <h3 class="fw-bold mb-3">Folios abiertos</h3>
+        <div id="listaCuentasAdmin" class="folios-scroll d-grid gap-3"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      <div class="admin-card cuenta-detail-card">
+
+        <div id="detalleCuentaAdmin" class="cuenta-detail-content">
+          <p class="text-secondary mb-0">Selecciona una cuenta para ver su consumo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+      <section id="vistaBalance" class="admin-view d-none">
+        <p class="section-label">Balance</p>
+        <h1 class="selection-title">Balance del negocio</h1>
+        <p class="selection-subtitle">Ventas separadas por método de pago.</p>
+
+        <div id="balanceAdmin" class="row g-3"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal fade" id="modalCerrarDia" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-5">
+        <div class="modal-body text-center p-5">
+
+          <div class="question-check">
+            <i class="bi bi-question-lg"></i>
+          </div>
+
+          <h3 class="fw-bold">¿Cerrar el día?</h3>
+
+          <p class="text-secondary">
+            Esto borrará órdenes, cuentas, balance y reiniciará los folios.
+          </p>
+
+          <div class="d-flex justify-content-center gap-2 flex-wrap mt-4">
+            <button class="btn btn-outline-secondary btn-lg rounded-4" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+
+            <button class="btn btn-danger btn-lg rounded-4 fw-bold" onclick="confirmarCerrarDia()">
+              Confirmar
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="modal fade" id="modalOrdenManualExito" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-5">
+      <div class="modal-body text-center p-5">
+        <div class="success-box">
+          <div class="success-check">
+            <i class="bi bi-check-lg"></i>
+          </div>
+
+          <h3>Orden enviada</h3>
+          <p>La orden fue mandada correctamente a cocina.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

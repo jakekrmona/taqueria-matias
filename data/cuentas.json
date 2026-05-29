@@ -1,0 +1,19 @@
+[
+  {
+    "folio": "001",
+    "cliente": "Jake",
+    "estado": "abierta",
+    "ordenes": [
+      1780038571589,
+      1780038590911,
+      1780038602927
+    ],
+    "total": 125,
+    "pagado": false,
+    "metodoPago": null,
+    "montoRecibido": null,
+    "cambio": null,
+    "fechaApertura": "29/5/2026, 1:09:31 a.m.",
+    "fechaCierre": null
+  }
+]
