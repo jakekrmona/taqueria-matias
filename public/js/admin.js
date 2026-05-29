@@ -437,7 +437,8 @@ function mostrarPagoEfectivo() {
   panelPago.innerHTML = `
     <input
       id="montoRecibido"
-      type="number"
+      type="tel"
+      inputmode="numeric"
       class="form-control no-spinner"
       placeholder="Recibido"
       oninput="calcularCambio()"

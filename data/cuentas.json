@@ -2,18 +2,18 @@
   {
     "folio": "001",
     "cliente": "Jake",
-    "estado": "abierta",
+    "estado": "cerrada",
     "ordenes": [
       1780038571589,
       1780038590911,
       1780038602927
     ],
     "total": 125,
-    "pagado": false,
-    "metodoPago": null,
-    "montoRecibido": null,
-    "cambio": null,
+    "pagado": true,
+    "metodoPago": "efectivo",
+    "montoRecibido": 125,
+    "cambio": 0,
     "fechaApertura": "29/5/2026, 1:09:31 a.m.",
-    "fechaCierre": null
+    "fechaCierre": "29/5/2026, 11:06:37 a.m."
   }
 ]
