@@ -9,57 +9,102 @@
     "orden": 1
   },
   {
-    "id": 1779692338148,
-    "nombre": "Taco de longaniza",
-    "precio": 25,
-    "categoria": "Tacos",
-    "descripcion": "Longaniza",
-    "disponible": true,
-    "orden": 2
-  },
-  {
     "id": 2,
     "nombre": "Taco campechano",
     "precio": 25,
     "categoria": "Tacos",
     "descripcion": "Carne asada y longaniza",
     "disponible": true,
+    "orden": 2
+  },
+  {
+    "id": 1779692338148,
+    "nombre": "Taco de longaniza",
+    "precio": 25,
+    "categoria": "Tacos",
+    "descripcion": "Longaniza",
+    "disponible": true,
     "orden": 3
   },
   {
     "id": 3,
-    "nombre": "Pambazo",
+    "nombre": "Pambazo de asada",
     "precio": 45,
     "categoria": "Especiales",
-    "descripcion": "Pambazo",
+    "descripcion": "Pambazo de carne asada",
     "disponible": true,
     "orden": 4
   },
   {
-    "id": 1779696709051,
-    "nombre": "Papa rellena",
-    "precio": 50,
-    "categoria": "Especiales",
-    "descripcion": "Papa con carne asada",
+    "id": 1780642411979,
+    "nombre": "Pambazo campechano",
+    "precio": 45,
+    "categoria": "Pambazo",
+    "descripcion": "Pambazo de carne y longaniza",
     "disponible": true,
     "orden": 5
   },
   {
-    "id": 1779696654589,
-    "nombre": "Coca-Cola",
-    "precio": 25,
-    "categoria": "Bebidas",
-    "descripcion": "Coca-Cola 355ml",
+    "id": 1780642436076,
+    "nombre": "Pambazo de longaniza",
+    "precio": 45,
+    "categoria": "Pambazo",
+    "descripcion": "Pambazo de longaniza",
     "disponible": true,
     "orden": 6
   },
   {
-    "id": 1779429390235,
-    "nombre": "Agua de jamaica",
+    "id": 1780642617388,
+    "nombre": "Tostada de asada",
+    "precio": 0,
+    "categoria": "Tostada",
+    "descripcion": "",
+    "disponible": true,
+    "orden": 7
+  },
+  {
+    "id": 1780642627440,
+    "nombre": "Tostada campechana",
+    "precio": 0,
+    "categoria": "Tostada",
+    "descripcion": "",
+    "disponible": true,
+    "orden": 8
+  },
+  {
+    "id": 1780642637302,
+    "nombre": "Tostada de longaniza",
+    "precio": 0,
+    "categoria": "Tostada",
+    "descripcion": "",
+    "disponible": true,
+    "orden": 9
+  },
+  {
+    "id": 1780642596562,
+    "nombre": "Papa asada",
+    "precio": 50,
+    "categoria": "Especiales",
+    "descripcion": "Papa a las brasas con carne",
+    "disponible": true,
+    "orden": 10
+  },
+  {
+    "id": 1780642515523,
+    "nombre": "Agua de jamaica 1L",
     "precio": 40,
     "categoria": "Bebidas",
     "descripcion": "Agua fresca de jamaica",
     "disponible": true,
-    "orden": 7
+    "orden": 11
+  },
+  {
+    "id": 1780642534688,
+    "nombre": "Agua de jamaica 1/2L",
+    "precio": 25,
+    "categoria": "Bebidas",
+    "descripcion": "Agua fresca de jamaica",
+    "disponible": true,
+    "orden": 12
   }
 ]
