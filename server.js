@@ -179,18 +179,80 @@ app.post('/api/ordenes', (req, res) => {
 
 app.put('/api/ordenes/:id', (req, res) => {
   let ordenes = leerJSON(ordenesPath);
+  let cuentas = leerJSON(cuentasPath);
   const id = Number(req.params.id);
+
+  const ordenAnterior = ordenes.find(orden => orden.id === id);
+
+  if (!ordenAnterior) {
+    return res.status(404).json({ mensaje: 'Orden no encontrada' });
+  }
+
+  const totalAnterior = Number(ordenAnterior.total || 0);
+  const totalNuevo = req.body.total !== undefined
+    ? Number(req.body.total)
+    : totalAnterior;
+
+  const diferencia = totalNuevo - totalAnterior;
 
   ordenes = ordenes.map(orden => {
     if (orden.id === id) {
-      return { ...orden, ...req.body };
+      return {
+        ...orden,
+        ...req.body,
+        total: totalNuevo
+      };
     }
 
     return orden;
   });
 
+  cuentas = cuentas.map(cuenta => {
+    if (cuenta.folio === ordenAnterior.folio && cuenta.estado === 'abierta') {
+      return {
+        ...cuenta,
+        total: cuenta.total + diferencia
+      };
+    }
+
+    return cuenta;
+  });
+
   guardarJSON(ordenesPath, ordenes);
+  guardarJSON(cuentasPath, cuentas);
+
   res.json({ mensaje: 'Orden actualizada' });
+});
+
+app.delete('/api/ordenes/:id', (req, res) => {
+  let ordenes = leerJSON(ordenesPath);
+  let cuentas = leerJSON(cuentasPath);
+  const id = Number(req.params.id);
+
+  const ordenEliminada = ordenes.find(orden => orden.id === id);
+
+  if (!ordenEliminada) {
+    return res.status(404).json({ mensaje: 'Orden no encontrada' });
+  }
+
+  ordenes = ordenes.filter(orden => orden.id !== id);
+
+  cuentas = cuentas.map(cuenta => {
+    if (cuenta.folio === ordenEliminada.folio && cuenta.estado === 'abierta') {
+      return {
+        ...cuenta,
+        ordenes: cuenta.ordenes.filter(idOrden => idOrden !== id),
+        total: Math.max(0, cuenta.total - Number(ordenEliminada.total || 0))
+      };
+    }
+
+    return cuenta;
+  });
+
+  guardarJSON(ordenesPath, ordenes);
+  guardarJSON(cuentasPath, cuentas);
+
+  res.json({ mensaje: 'Orden eliminada' });
 });
 
 // CUENTAS

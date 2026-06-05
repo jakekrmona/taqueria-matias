@@ -1,8 +1,25 @@
+//admin.js
+let ordenEditando = null;
+let ordenEliminarId = null;
 let folioSeleccionado = null;
-let carritoManual = [];
 let productosAdmin = [];
 let ultimaOrdenDetectada = null;
 let hayOrdenesNuevas = false;
+
+let subordenesManual = [];
+let subordenActivaId = null;
+
+function crearSubordenManual() {
+  return {
+    id: Date.now() + Math.random(),
+    productos: [],
+    notas: ''
+  };
+}
+
+function obtenerSubordenActiva() {
+  return subordenesManual.find(suborden => suborden.id === subordenActivaId);
+}
 
 const sonidoOrden = new Audio('/sounds/campana.mp3');
 sonidoOrden.preload = 'auto';
@@ -140,15 +157,25 @@ async function cargarOrdenesAdmin() {
 
         ${orden.notas ? `<p><strong>Notas:</strong> ${orden.notas}</p>` : ''}
 
-        ${
-          completada
-            ? `<div class="completed-mark"><i class="bi bi-check-lg"></i></div>`
-            : `
-              <button class="complete-order-btn" onclick="completarOrden(${orden.id})">
-                <i class="bi bi-check-lg"></i>
-              </button>
-            `
-        }
+<div class="order-actions">
+  <button class="order-action-btn edit" onclick="abrirModalEditarOrden(${orden.id})">
+    <i class="bi bi-pencil-fill"></i>
+  </button>
+
+  <button class="order-action-btn delete" onclick="abrirModalEliminarOrden(${orden.id})">
+    <i class="bi bi-trash3-fill"></i>
+  </button>
+
+  ${
+    completada
+      ? `<div class="order-action-btn completed"><i class="bi bi-check-lg"></i></div>`
+      : `
+        <button class="order-action-btn complete" onclick="completarOrden(${orden.id})">
+          <i class="bi bi-check-lg"></i>
+        </button>
+      `
+  }
+</div>
       </article>
     `;
   });
@@ -162,6 +189,144 @@ async function completarOrden(idOrden) {
   });
 
   cargarOrdenesAdmin();
+}
+
+async function abrirModalEditarOrden(idOrden) {
+  const respuesta = await fetch('/api/ordenes');
+  const ordenes = await respuesta.json();
+
+  const orden = ordenes.find(orden => orden.id === idOrden);
+
+  if (!orden) return;
+
+  ordenEditando = JSON.parse(JSON.stringify(orden));
+
+  renderizarModalEditarOrden();
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEditarOrden'));
+  modal.show();
+}
+
+function renderizarModalEditarOrden() {
+  const contenedor = document.getElementById('contenidoEditarOrden');
+  const notasInput = document.getElementById('notasEditarOrden');
+  const totalTexto = document.getElementById('totalEditarOrden');
+
+  if (!ordenEditando || !contenedor || !notasInput || !totalTexto) return;
+
+  contenedor.innerHTML = '';
+
+  ordenEditando.productos.forEach(producto => {
+    contenedor.innerHTML += `
+      <div class="edit-order-item">
+        <div>
+          <strong>${producto.nombre}</strong>
+          <p class="mb-0 text-secondary">$${producto.precio} c/u</p>
+        </div>
+
+        <div class="edit-order-qty">
+          <button onclick="cambiarCantidadOrdenEditada(${producto.id}, -1)">−</button>
+          <span>${producto.cantidad}</span>
+          <button onclick="cambiarCantidadOrdenEditada(${producto.id}, 1)">+</button>
+        </div>
+
+        <strong>$${producto.precio * producto.cantidad}</strong>
+      </div>
+    `;
+  });
+
+  notasInput.value = ordenEditando.notas || '';
+
+  const total = ordenEditando.productos.reduce((suma, producto) => {
+    return suma + producto.precio * producto.cantidad;
+  }, 0);
+
+  totalTexto.textContent = total;
+}
+
+function cambiarCantidadOrdenEditada(idProducto, cambio) {
+  if (!ordenEditando) return;
+
+  const producto = ordenEditando.productos.find(producto => producto.id === idProducto);
+
+  if (!producto) return;
+
+  producto.cantidad += cambio;
+
+  if (producto.cantidad <= 0) {
+    ordenEditando.productos = ordenEditando.productos.filter(producto => producto.id !== idProducto);
+  }
+
+  renderizarModalEditarOrden();
+}
+
+async function guardarOrdenEditada() {
+  if (!ordenEditando) return;
+
+  const notasInput = document.getElementById('notasEditarOrden');
+
+  ordenEditando.notas = notasInput.value.trim();
+
+  const total = ordenEditando.productos.reduce((suma, producto) => {
+    return suma + producto.precio * producto.cantidad;
+  }, 0);
+
+  if (ordenEditando.productos.length === 0) {
+    abrirModalEliminarOrden(ordenEditando.id);
+    bootstrap.Modal.getInstance(document.getElementById('modalEditarOrden')).hide();
+    return;
+  }
+
+  await fetch(`/api/ordenes/${ordenEditando.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productos: ordenEditando.productos,
+      notas: ordenEditando.notas,
+      total
+    })
+  });
+
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarOrden'));
+  modal.hide();
+
+  ordenEditando = null;
+
+  cargarOrdenesAdmin();
+  cargarCuentasAdmin();
+  cargarBalanceAdmin();
+
+  if (folioSeleccionado) {
+    actualizarDetalleSeleccionado();
+  }
+}
+
+function abrirModalEliminarOrden(idOrden) {
+  ordenEliminarId = idOrden;
+
+  const modal = new bootstrap.Modal(document.getElementById('modalEliminarOrden'));
+  modal.show();
+}
+
+async function confirmarEliminarOrden() {
+  if (!ordenEliminarId) return;
+
+  await fetch(`/api/ordenes/${ordenEliminarId}`, {
+    method: 'DELETE'
+  });
+
+  const modal = bootstrap.Modal.getInstance(document.getElementById('modalEliminarOrden'));
+  modal.hide();
+
+  ordenEliminarId = null;
+
+  cargarOrdenesAdmin();
+  cargarCuentasAdmin();
+  cargarBalanceAdmin();
+
+  if (folioSeleccionado) {
+    actualizarDetalleSeleccionado();
+  }
 }
 
 async function cargarProductosAdmin() {
@@ -383,17 +548,32 @@ async function verDetalleCuenta(folio) {
     </h2>
 
     <div class="payment-method-buttons">
-      <button id="btnPagoEfectivo" class="btn btn-outline-warning rounded-4 fw-bold" onclick="mostrarPagoEfectivo()">
-        Efectivo
-      </button>
+<button
+  id="btnPagoEfectivo"
+  class="btn btn-outline-warning rounded-4 fw-bold"
+  onclick="mostrarPagoEfectivo()"
+  title="Efectivo"
+>
+  <i class="bi bi-cash-stack"></i>
+</button>
 
-      <button id="btnPagoTransferencia" class="btn btn-outline-warning rounded-4 fw-bold" onclick="mostrarConfirmacionPago('${datos.cuenta.folio}', 'Transferencia')">
-        Transferencia
-      </button>
+<button
+  id="btnPagoTransferencia"
+  class="btn btn-outline-warning rounded-4 fw-bold"
+  onclick="mostrarConfirmacionPago('${datos.cuenta.folio}', 'Transferencia')"
+  title="Transferencia"
+>
+  <i class="bi bi-box-arrow-up"></i>
+</button>
 
-      <button id="btnPagoTarjeta" class="btn btn-outline-warning rounded-4 fw-bold" onclick="mostrarConfirmacionPago('${datos.cuenta.folio}', 'Tarjeta')">
-        Tarjeta
-      </button>
+<button
+  id="btnPagoTarjeta"
+  class="btn btn-outline-warning rounded-4 fw-bold"
+  onclick="mostrarConfirmacionPago('${datos.cuenta.folio}', 'Tarjeta')"
+  title="Tarjeta"
+>
+  <i class="bi bi-credit-card"></i>
+</button>
     </div>
   </div>
 
@@ -435,14 +615,15 @@ function mostrarPagoEfectivo() {
   panelPago.classList.remove('d-none');
 
   panelPago.innerHTML = `
-    <input
-      id="montoRecibido"
-      type="tel"
-      inputmode="numeric"
-      class="form-control no-spinner"
-      placeholder="Recibido"
-      oninput="calcularCambio()"
-    >
+<input
+  id="montoRecibido"
+  type="number"
+  inputmode="decimal"
+  pattern="[0-9]*"
+  class="form-control no-spinner"
+  placeholder="Recibido"
+  oninput="calcularCambio()"
+>
 
     <strong id="textoCambio" class="text-danger">
       Faltan: $${total}
@@ -611,7 +792,11 @@ async function cargarBalanceAdmin() {
 
   const productosVendidos = {};
 
-  ordenes.forEach(orden => {
+const foliosCerrados = cerradas.map(cuenta => cuenta.folio);
+
+ordenes
+  .filter(orden => foliosCerrados.includes(orden.folio))
+  .forEach(orden => {
     orden.productos.forEach(producto => {
       if (!productosVendidos[producto.nombre]) {
         productosVendidos[producto.nombre] = {
@@ -718,6 +903,12 @@ async function confirmarCerrarDia() {
 }
 
 async function cargarTomarOrden() {
+  if (subordenesManual.length === 0) {
+    const primeraSuborden = crearSubordenManual();
+    subordenesManual.push(primeraSuborden);
+    subordenActivaId = primeraSuborden.id;
+  }
+
   const respuesta = await fetch('/api/productos');
   productosAdmin = await respuesta.json();
 
@@ -726,12 +917,14 @@ async function cargarTomarOrden() {
   const contenedor = document.getElementById('productosTomarOrden');
   if (!contenedor) return;
 
+  const subordenActiva = obtenerSubordenActiva();
+
   contenedor.innerHTML = '';
 
   productosAdmin.forEach(producto => {
     if (!producto.disponible) return;
 
-    const itemCarrito = carritoManual.find(item => item.id === producto.id);
+    const itemCarrito = subordenActiva.productos.find(item => item.id === producto.id);
     const cantidad = itemCarrito ? itemCarrito.cantidad : 0;
 
     contenedor.innerHTML += `
@@ -746,92 +939,199 @@ async function cargarTomarOrden() {
       </article>
     `;
   });
+
+  renderizarCarritoManual();
 }
 
 function cambiarCantidadManual(idProducto, cambio) {
   const producto = productosAdmin.find(p => p.id === idProducto);
-  if (!producto) return;
+  const subordenActiva = obtenerSubordenActiva();
 
-  const existente = carritoManual.find(p => p.id === idProducto);
+  if (!producto || !subordenActiva) return;
+
+  const existente = subordenActiva.productos.find(p => p.id === idProducto);
 
   if (existente) {
     existente.cantidad += cambio;
 
     if (existente.cantidad <= 0) {
-      carritoManual = carritoManual.filter(p => p.id !== idProducto);
+      subordenActiva.productos = subordenActiva.productos.filter(p => p.id !== idProducto);
     }
   } else if (cambio > 0) {
-    carritoManual.push({ ...producto, cantidad: 1 });
+    subordenActiva.productos.push({
+      ...producto,
+      cantidad: 1
+    });
   }
 
   cargarTomarOrden();
-  renderizarCarritoManual();
+}
+
+function agregarCorteManual() {
+  const nuevaSuborden = crearSubordenManual();
+
+  subordenesManual.push(nuevaSuborden);
+  subordenActivaId = nuevaSuborden.id;
+
+  cargarTomarOrden();
+}
+
+function seleccionarCorteManual(idSuborden) {
+  subordenActivaId = idSuborden;
+
+  const subordenActiva = obtenerSubordenActiva();
+  const notasInput = document.getElementById('notasOrdenManual');
+
+  if (notasInput && subordenActiva) {
+    notasInput.value = subordenActiva.notas || '';
+  }
+
+  cargarTomarOrden();
+}
+
+function eliminarCorteManual(idSuborden) {
+  if (subordenesManual.length === 1) return;
+
+  subordenesManual = subordenesManual.filter(suborden => suborden.id !== idSuborden);
+
+  if (subordenActivaId === idSuborden) {
+    subordenActivaId = subordenesManual[0].id;
+  }
+
+  cargarTomarOrden();
+}
+
+function actualizarNotasSubordenActiva() {
+  const subordenActiva = obtenerSubordenActiva();
+  const notasInput = document.getElementById('notasOrdenManual');
+
+  if (!subordenActiva || !notasInput) return;
+
+  subordenActiva.notas = notasInput.value;
 }
 
 function renderizarCarritoManual() {
-  const contenedor = document.getElementById('carritoOrdenManual');
-  if (!contenedor) return;
+  const cortesContenedor = document.getElementById('cortesOrdenManual');
+  const carritoContenedor = document.getElementById('carritoOrdenManual');
+  const totalTexto = document.getElementById('totalOrdenManual');
+  const notasInput = document.getElementById('notasOrdenManual');
 
-  contenedor.innerHTML = '';
+  if (!cortesContenedor || !carritoContenedor || !totalTexto) return;
 
-  let total = 0;
+  const subordenActiva = obtenerSubordenActiva();
 
-  carritoManual.forEach(producto => {
-    total += producto.precio * producto.cantidad;
+  cortesContenedor.innerHTML = '';
 
-    contenedor.innerHTML += `
-      <div class="manual-cart-item">
-        <span>${producto.cantidad} x ${producto.nombre}</span>
-        <strong>$${producto.precio * producto.cantidad}</strong>
-      </div>
+  subordenesManual.forEach((suborden, index) => {
+    const activa = suborden.id === subordenActivaId;
+    const cantidadProductos = suborden.productos.reduce((suma, producto) => {
+      return suma + producto.cantidad;
+    }, 0);
+
+    cortesContenedor.innerHTML += `
+      <button
+        class="manual-cut-btn ${activa ? 'active' : ''}"
+        onclick="seleccionarCorteManual(${suborden.id})"
+      >
+        <span>Corte ${index + 1}</span>
+        <small>${cantidadProductos} prod.</small>
+
+        ${
+          subordenesManual.length > 1
+            ? `<i class="bi bi-x-lg" onclick="event.stopPropagation(); eliminarCorteManual(${suborden.id})"></i>`
+            : ''
+        }
+      </button>
     `;
   });
 
-  document.getElementById('totalOrdenManual').textContent = total;
+  carritoContenedor.innerHTML = '';
+
+  let totalGeneral = 0;
+
+  subordenesManual.forEach(suborden => {
+    suborden.productos.forEach(producto => {
+      totalGeneral += producto.precio * producto.cantidad;
+    });
+  });
+
+  if (subordenActiva) {
+    subordenActiva.productos.forEach(producto => {
+      carritoContenedor.innerHTML += `
+        <div class="manual-cart-item">
+          <span>${producto.cantidad} x ${producto.nombre}</span>
+          <strong>$${producto.precio * producto.cantidad}</strong>
+        </div>
+      `;
+    });
+
+    if (notasInput) {
+      notasInput.value = subordenActiva.notas || '';
+    }
+  }
+
+  totalTexto.textContent = totalGeneral;
 }
 
 async function enviarOrdenManual() {
   const nombreInput = document.getElementById('nombreOrdenManual');
-  const notasInput = document.getElementById('notasOrdenManual');
+  const folioSelect = document.getElementById('folioOrdenManual');
 
   const nombre = nombreInput.value.trim();
-  const notas = notasInput.value.trim();
-  const folio = document.getElementById('folioOrdenManual').value;
+  let folio = folioSelect.value;
 
-  if (carritoManual.length === 0 || !nombre) {
+  const subordenesConProductos = subordenesManual.filter(suborden => {
+    return suborden.productos.length > 0;
+  });
+
+  if (subordenesConProductos.length === 0 || !nombre) {
     nombreInput.focus();
     return;
   }
 
-  const total = carritoManual.reduce((suma, producto) => {
-    return suma + producto.precio * producto.cantidad;
-  }, 0);
+  for (let i = 0; i < subordenesConProductos.length; i++) {
+    const suborden = subordenesConProductos[i];
 
-  await fetch('/api/ordenes', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      cliente: nombre,
-      folio: folio || null,
-      productos: carritoManual,
-      notas,
-      total
-    })
-  });
+    const total = suborden.productos.reduce((suma, producto) => {
+      return suma + producto.precio * producto.cantidad;
+    }, 0);
 
-  carritoManual = [];
+    const respuesta = await fetch('/api/ordenes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cliente: nombre,
+        folio: folio || null,
+        productos: suborden.productos,
+        notas: suborden.notas || '',
+        total
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!folio) {
+      folio = datos.cuenta.folio;
+    }
+  }
+
+  subordenesManual = [];
+  const nuevaSuborden = crearSubordenManual();
+  subordenesManual.push(nuevaSuborden);
+  subordenActivaId = nuevaSuborden.id;
+
   nombreInput.value = '';
-  notasInput.value = '';
-
   nombreInput.readOnly = false;
-document.getElementById('folioOrdenManual').value = '';
-cargarFoliosManual();
+  folioSelect.value = '';
+
+  const notasInput = document.getElementById('notasOrdenManual');
+  if (notasInput) notasInput.value = '';
 
   cargarTomarOrden();
   cargarFoliosManual();
-  renderizarCarritoManual();
   cargarOrdenesAdmin();
   cargarCuentasAdmin();
+  renderizarCarritoManual();
 
   mostrarExitoOrdenManual();
 }

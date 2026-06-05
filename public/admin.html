@@ -106,12 +106,24 @@
           placeholder="Nombre del cliente"
         >
 
-        <div id="carritoOrdenManual" class="manual-cart-box mb-3"></div>
+<div class="d-flex gap-2 mb-3">
+  <button
+    class="btn btn-outline-warning rounded-4 fw-bold w-100"
+    onclick="agregarCorteManual()"
+  >
+    Corte
+  </button>
+</div>
+
+<div id="cortesOrdenManual" class="manual-cuts-box mb-3"></div>
+
+<div id="carritoOrdenManual" class="manual-cart-box mb-3"></div>
 
 <input
   id="notasOrdenManual"
   class="form-control form-control-lg rounded-4 mb-3"
-  placeholder="Instrucciones extra"
+  placeholder="Instrucciones extra de este corte"
+  oninput="actualizarNotasSubordenActiva()"
 />
 
         <h2 class="text-warning fw-bold">
@@ -243,6 +255,66 @@
 
           <h3>Orden enviada</h3>
           <p>La orden fue mandada correctamente a cocina.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEditarOrden" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-5">
+      <div class="modal-body p-4">
+        <h3 class="fw-bold mb-3">Editar orden</h3>
+
+        <div id="contenidoEditarOrden" class="d-grid gap-3"></div>
+
+        <input
+          id="notasEditarOrden"
+          class="form-control form-control-lg rounded-4 mt-3"
+          placeholder="Notas de la orden"
+        >
+
+        <h3 class="text-warning fw-bold mt-3">
+          Total: $<span id="totalEditarOrden">0</span>
+        </h3>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button class="btn btn-outline-secondary btn-lg rounded-4" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-warning btn-lg rounded-4 fw-bold" onclick="guardarOrdenEditada()">
+            Guardar cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEliminarOrden" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-5">
+      <div class="modal-body text-center p-5">
+        <div class="question-check">
+          <i class="bi bi-trash3-fill"></i>
+        </div>
+
+        <h3 class="fw-bold">¿Eliminar orden?</h3>
+
+        <p class="text-secondary">
+          Esto quitará la orden del folio y actualizará el total.
+        </p>
+
+        <div class="d-flex justify-content-center gap-2 mt-4">
+          <button class="btn btn-outline-secondary btn-lg rounded-4" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button class="btn btn-danger btn-lg rounded-4 fw-bold" onclick="confirmarEliminarOrden()">
+            Eliminar
+          </button>
         </div>
       </div>
     </div>
